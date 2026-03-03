@@ -73,7 +73,7 @@
         
         .game-board {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 8px;
             background: rgba(255, 255, 255, 0.1);
             padding: 15px;
@@ -339,22 +339,18 @@
         let isGameOver = false;
         let isPlaying = false;
         
-        const BOARD_SIZE = 5;
+        const BOARD_SIZE = 4;
         const NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8];
         
         function initBoard() {
             board = [];
             const pairs = [];
             const totalTiles = BOARD_SIZE * BOARD_SIZE;
-            const numPairs = Math.floor(totalTiles / 2);
+            const numPairs = totalTiles / 2;
             
             for (let i = 0; i < numPairs; i++) {
                 const num = NUMBERS[i % NUMBERS.length];
                 pairs.push(num, num);
-            }
-            
-            if (totalTiles % 2 !== 0) {
-                pairs.push(NUMBERS[Math.floor(Math.random() * NUMBERS.length)]);
             }
             
             for (let i = pairs.length - 1; i > 0; i--) {
