@@ -18,9 +18,10 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             color: white;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
             padding: 10px;
         }
         
@@ -34,6 +35,13 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             width: 100%;
             max-width: 500px;
+        }
+        
+        @media (max-width: 767px) {
+            .container {
+                gap: 10px;
+                padding: 10px;
+            }
         }
         
         .top-section {
@@ -59,6 +67,12 @@
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
             max-width: 100%;
             height: auto;
+        }
+        
+        @media (max-width: 767px) {
+            #gameCanvas {
+                max-width: 240px;
+            }
         }
         
         .info-panel {
