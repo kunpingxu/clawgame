@@ -263,6 +263,10 @@
             .touch-controls {
                 display: none;
             }
+            
+            .desktop-controls {
+                display: block !important;
+            }
         }
     </style>
 </head>
@@ -319,6 +323,21 @@
             <button class="btn" id="startBtn">🎮 开始游戏</button>
             <button class="btn" id="pauseBtn" style="display: none;">⏸️ 暂停</button>
         </div>
+        
+        <div class="desktop-controls" style="display: none; margin-top: 15px;">
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 10px;">
+                <button class="btn" id="desktopUp" style="min-width: 60px; padding: 10px;">⬆️</button>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 10px;">
+                <button class="btn" id="desktopLeft" style="min-width: 60px; padding: 10px;">⬅️</button>
+                <button class="btn" id="desktopDown" style="min-width: 60px; padding: 10px;">⬇️</button>
+                <button class="btn" id="desktopRight" style="min-width: 60px; padding: 10px;">➡️</button>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
+                <button class="btn" id="desktopPause" style="min-width: 60px; padding: 10px;">⏸️</button>
+                <button class="btn" id="desktopDrop" style="min-width: 60px; padding: 10px;">💥</button>
+            </div>
+        </div>
     </div>
     
     <div class="game-over" id="gameOver">
@@ -329,11 +348,52 @@
 
     <script>
         let audioContext = null;
+        let isMusicPlaying = false;
         
         function initAudio() {
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
+        }
+        
+        function playBackgroundMusic() {
+            if (!audioContext) initAudio();
+            if (isMusicPlaying) return;
+            
+            isMusicPlaying = true;
+            
+            function playNote(frequency, startTime, duration, gainValue) {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(frequency, startTime);
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.05);
+                gain.gain.linearRampToValueAtTime(0, startTime + duration);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            }
+            
+            const melody = [
+                262, 294, 330, 349, 392, 440, 494, 523,
+                494, 440, 392, 349, 330, 294, 262,
+                294, 330, 349, 392, 440, 494, 523,
+                523, 494, 440, 392, 349, 330, 294, 262
+            ];
+            
+            const now = audioContext.currentTime;
+            melody.forEach((note, i) => {
+                playNote(note, now + i * 0.3, 0.25, 0.08);
+            });
+            
+            setTimeout(() => {
+                isMusicPlaying = false;
+                if (!isGameOver && !isPaused) {
+                    playBackgroundMusic();
+                }
+            }, melody.length * 300 + 500);
         }
         
         function playSound(type) {
@@ -351,7 +411,7 @@
                 case 'move':
                     oscillator.frequency.setValueAtTime(200, now);
                     oscillator.frequency.exponentialRampToValueAtTime(150, now + 0.1);
-                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.setValueAtTime(0.3, now);
                     gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
                     oscillator.start(now);
                     oscillator.stop(now + 0.1);
@@ -360,7 +420,7 @@
                 case 'rotate':
                     oscillator.frequency.setValueAtTime(300, now);
                     oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.setValueAtTime(0.3, now);
                     gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
                     oscillator.start(now);
                     oscillator.stop(now + 0.15);
@@ -370,7 +430,7 @@
                     oscillator.type = 'sawtooth';
                     oscillator.frequency.setValueAtTime(400, now);
                     oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.2);
-                    gainNode.gain.setValueAtTime(0.15, now);
+                    gainNode.gain.setValueAtTime(0.35, now);
                     gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
                     oscillator.start(now);
                     oscillator.stop(now + 0.2);
@@ -392,8 +452,8 @@
                     osc1.frequency.setValueAtTime(784, now + 0.1);
                     osc2.frequency.setValueAtTime(988, now + 0.1);
                     
-                    gain1.gain.setValueAtTime(0.15, now);
-                    gain2.gain.setValueAtTime(0.15, now);
+                    gain1.gain.setValueAtTime(0.35, now);
+                    gain2.gain.setValueAtTime(0.35, now);
                     gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
                     gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
                     
@@ -407,7 +467,7 @@
                     oscillator.type = 'sawtooth';
                     oscillator.frequency.setValueAtTime(400, now);
                     oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.5);
-                    gainNode.gain.setValueAtTime(0.2, now);
+                    gainNode.gain.setValueAtTime(0.4, now);
                     gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
                     oscillator.start(now);
                     oscillator.stop(now + 0.5);
@@ -421,7 +481,7 @@
                         osc.connect(gain);
                         gain.connect(audioContext.destination);
                         osc.frequency.setValueAtTime(freq, now + i * 0.1);
-                        gain.gain.setValueAtTime(0.1, now + i * 0.1);
+                        gain.gain.setValueAtTime(0.3, now + i * 0.1);
                         gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.2);
                         osc.start(now + i * 0.1);
                         osc.stop(now + i * 0.1 + 0.2);
@@ -717,6 +777,7 @@
             dropInterval = 1000;
             isPaused = false;
             isGameOver = false;
+            isMusicPlaying = false;
             
             document.getElementById('score').textContent = score;
             document.getElementById('level').textContent = level;
@@ -728,6 +789,8 @@
             
             document.getElementById('startBtn').style.display = 'none';
             document.getElementById('pauseBtn').style.display = 'block';
+            
+            playBackgroundMusic();
             
             if (gameLoop) clearInterval(gameLoop);
             gameLoop = setInterval(() => {
@@ -829,6 +892,33 @@
         
         document.getElementById('startBtn').addEventListener('click', startGame);
         document.getElementById('pauseBtn').addEventListener('click', togglePause);
+        
+        document.getElementById('desktopUp').addEventListener('click', () => {
+            if (!currentPiece || isPaused || isGameOver) return;
+            rotatePiece();
+        });
+        
+        document.getElementById('desktopDown').addEventListener('click', () => {
+            if (!currentPiece || isPaused || isGameOver) return;
+            moveDown();
+        });
+        
+        document.getElementById('desktopLeft').addEventListener('click', () => {
+            if (!currentPiece || isPaused || isGameOver) return;
+            moveLeft();
+        });
+        
+        document.getElementById('desktopRight').addEventListener('click', () => {
+            if (!currentPiece || isPaused || isGameOver) return;
+            moveRight();
+        });
+        
+        document.getElementById('desktopPause').addEventListener('click', togglePause);
+        
+        document.getElementById('desktopDrop').addEventListener('click', () => {
+            if (!currentPiece || isPaused || isGameOver) return;
+            hardDrop();
+        });
         
         initBoard();
         draw();
